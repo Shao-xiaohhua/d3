@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<style>
+  .axis path,
+  .axis line{
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+  }
+
+  .MyRect {
+    fill: steelblue;
+  }
+
+  .MyText {
+    fill: white;
+    text-anchor: middle;
+  }
+</style>
+<body>
+<span>NO.1</span>
+<p class="no1">Hello word!</p>
+<p class="no1">Hello word!</p>
+<span>NO.2</span>
+<p class="no2">Apple</p>
+<p class="no2">Pear</p>
+<p class="no2">Banana</p>
+
+<p class="no2-data">Apple</p>
+<p class="no2-data">Pear</p>
+<p class="no2-data">Banana</p>
+<span>NO.3</span>
+<div id="app" style="width: 90px;height: 90px;background: yellowgreen"></div>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script>
+  /*NO.1    获取操作DOM===================================================================================================*/
+  /*var body = d3.select("body"); //选择文档中的body元素
+   var p1 = body.select("p");      //选择body中的第一个p元素
+   var p = body.selectAll("p");    //选择body中的所有p元素
+   var svg = body.select("svg");   //选择body中的svg元素
+   var rects = svg.selectAll("rect");  //选择svg中所有的svg元素*/
+  d3.selectAll('span').style('color','blue');
+  var p = d3.select("body").  //获取一个元素
+                      selectAll(".no1").   //获取多个元素
+                      text("www.decembercafe.org"); //改变文本
+
+  p.style('color','red');//改变样式
+
+
+  /*NO.2 选择元素绑定数据==================================================================================================*/
+  /*datum()：绑定一个数据到选择集上
+   data()：绑定一个数组到选择集上，数组的各项值分别与选择集的各元素绑定*/
+  var str = "China";
+  var noTwo = d3.selectAll('.no2');
+  noTwo.datum(str);
+  noTwo.text(function(d, i){
+    return "第 "+ i + " 个元素绑定的数据是 " + d;      /*d 代表数据，也就是与某元素绑定的数据
+                                                                                           i  代表索引，代表数据的索引号，从 0 开始*/
+  });
+
+  var dataset = ["I like dogs","I like cats","I like snakes"];
+  var pData = d3.selectAll('.no2-data');
+  pData.data(dataset)
+    .text(function(d, i){
+      return d;
+    });
+
+  /*NO.3 插入删除元素=======================================================================================================*/
+  /*append()：在选择集末尾插入元素
+   insert()：在选择集前面插入元素*/
+
+  var body = d3.select('body');
+  body.append('p').text('append p element');//在末尾添加
+  body.insert("p","#app") //在app前插入元素
+    .text("insert p element");
+  var p = body.select("#myid");
+  p.remove();  //删除某个元素
+
+  /*NO.4做一个简单的图表=====================================================================================================*/
+  /*SVG  放大不失真 矢量图 每个图形均视为对象 更改对象属性 图形也会改变
+  and
+  Canvas  放大会失真 位图  不支持事件处理 只适合做游戏
+  */
+
+  var width = 500;  //画布的宽度
+  var height = 500;   //画布的高度
+
+  var svg = body     //选择文档中的body元素
+    .append("svg")          //添加一个svg元素
+    .attr("width", width)       //设定宽度
+    .attr("height", height);
+  /*
+  * <svg>
+   <rect></rect>
+   <rect></rect>
+   </svg>
+   上面的 rect 里没有矩形的属性。矩形的属性，常用的有四个：
+
+   x - 矩形左上角的 x 坐标
+   y - 矩形左上角的 y 坐标
+   width - 矩形的宽度
+   height - 矩形的高度
+   */
+  var arr = [ 250 , 210 , 170 , 130 , 90 ];  //数据（表示矩形的宽度）
+  var rectHeight = 30;   //每个矩形所占的像素高度(包括空白)
+  svg.selectAll("rect")
+    .data(arr) //绑定数据
+    .enter() //指定选择集的enter部分
+    .append("rect")//添加足够数量的矩形元素
+    .attr("x",20)//左间距
+    .attr("y",function(d,i){
+      return i * rectHeight;
+    })
+    .attr("width",function(d){
+      return d; //宽度与数据绑定
+    })
+    .attr("height",rectHeight-10) //设置高度
+    .attr("fill","brown"); //设置颜色
+
+  /*NO.5比例尺寸的使用==================================================================================*/
+  /*
+比例的使用时为了解决用数据的方法展示图形如果数值过大或过小会存在问题
+例如：var dataset_1 = [ 2.5 , 2.1 , 1.7 , 1.3 , 0.9 ];
+            var dataset_2 = [ 2500, 2100, 1700, 1300, 900 ];
+            这样展示不合适
+  */
+  var arrTwo = [ 2.5 , 2.1 , 1.7 , 1.3 , 0.9 ];
+
+  var linear = d3.scale.linear()
+    .domain([0, d3.max(arrTwo)])
+    .range([0, 300]);
+
+  var svg2 = body     //选择文档中的body元素
+    .append("svg")          //添加一个svg元素
+    .attr("width", width)       //设定宽度
+    .attr("height", height);
+  svg2.selectAll("rect")
+    .data(arrTwo)
+    .enter()
+    .append("rect")
+    .attr("x",20)
+    .attr("y",function(d,i){
+      return i * rectHeight;
+    })
+    .attr("width",function(d){
+      return linear(d);   //在这里用比例尺
+    })
+    .attr("height",rectHeight-2)
+    .attr("fill","steelblue");
+
+  /*NO.6坐标轴========================================================================================*/
+  /*坐标轴由什么构成
+   d3.svg.axis() 添加坐标轴组件
+   */
+  var axis = d3.svg.axis()
+    .scale(linear)      //指定比例尺
+    .orient("bottom")   //指定刻度的方向
+    .ticks(7);//指定刻度数量
+
+  var svg3= body     //选择文档中的body元素
+    .append("svg")          //添加一个svg元素
+    .attr("width", width)       //设定宽度
+    .attr("height", height);
+
+  svg3.append("g")
+    .attr("class","axis")
+    .attr("transform","translate(10,130)")
+    .call(axis);
+
+  /*NO.7完整的柱形图=====================================================================================*/
+  /*坐一个完整的柱形图包含三部分：矩形、文字、坐标轴。本课将对前几课的内容进行综合的运用，制作一个实用的柱形图，内容包括：选择集、数据绑定、比例尺、坐标轴等内容。*/
+  var widthSr = 700;
+  var heightSr = 700;
+  //在 body 里添加一个 SVG 画布
+  var svg4 = body
+    .append("svg")
+    .attr("width", widthSr)
+    .attr("height", heightSr);
+  //画布周边的空白
+  var padding = {left:30, right:30, top:20, bottom:20};
+  //定义一个数组
+  var arrsr = [10, 20, 30, 40, 33, 24, 12, 5];
+  //x轴的比例尺
+  var xScale = d3.scale.ordinal()
+    .domain(d3.range(arrsr.length))
+    .rangeRoundBands([0, width - padding.left - padding.right]);         //x 轴使用序数比例尺，y 轴使用线性比例尺。要注意两个比例尺值域的范围。
+
+  //y轴的比例尺
+  var yScale = d3.scale.linear()
+    .domain([0,d3.max(arrsr)])
+    .range([height - padding.top - padding.bottom, 0]);
+
+  //定义x轴
+  var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient("bottom");
+                                                           //x 轴刻度的方向向下，y 轴的向左。
+  //定义y轴
+  var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient("left");
+  //矩形之间的空白
+  var rectPadding = 4;
+
+  //添加矩形元素
+  var rects = svg4.selectAll(".MyRect")
+    .data(arrsr)
+    .enter()
+    .append("rect")
+    .attr("class","MyRect")
+    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+    .attr("x", function(d,i){
+      return xScale(i) + rectPadding/2;
+    } )
+    .attr("y",function(d){
+      return yScale(d);
+    })
+    .attr("width", xScale.rangeBand() - rectPadding )
+    .attr("y",function(d){
+      var min = yScale.domain()[0];
+      return yScale(min);
+    })
+    .attr("height", function(d){
+      return 0;
+    })
+    .transition()
+    .delay(function(d,i){
+      return i * 200;
+    })
+    .duration(2000)
+    .ease("bounce")
+    .attr("y",function(d){
+      return yScale(d);
+    })
+    .attr("height", function(d){
+      return height - padding.top - padding.bottom - yScale(d);
+    });
+  //添加文字元素
+  var texts = svg4.selectAll(".MyText")
+    .data(arrsr)
+    .enter()
+    .append("text")
+    .attr("class","MyText")
+    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+    .attr("x", function(d,i){
+      return xScale(i) + rectPadding/2;
+    } )
+    .attr("y",function(d){
+      return yScale(d);
+    })
+    .attr("dx",function(){
+      return (xScale.rangeBand() - rectPadding)/2;
+    })
+    .attr("dy",function(d){
+      return 20;
+    })
+    .text(function(d){
+      return d;
+    });
+  //添加x轴
+  svg4.append("g")
+    .attr("class","axis")
+    .attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
+    .call(xAxis);
+
+  //添加y轴
+  svg4.append("g")
+    .attr("class","axis")
+    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+    .call(yAxis);
+
+  /*NO.8让图表动起来==================================================================================*/
+  /*transition()*/
+  /*.attr("fill","red")         //初始颜色为红色
+   .transition()               //启动过渡
+   .attr("fill","steelblue")   //终止颜色为铁蓝色*/
+  /*duration()
+
+   指定过渡的持续时间，单位为毫秒。
+
+   如 duration(2000) ，指持续 2000 毫秒，即 2 秒。*/
+
+  /*ease()
+
+   指定过渡的方式，常用的有：
+
+   linear：普通的线性变化
+   circle：慢慢地到达变换的最终状态
+   elastic：带有弹跳的到达最终状态
+   bounce：在最终状态处弹跳几次
+   调用时，格式形如： ease(“bounce”)。*/
+
+  /*delay()
+
+   指定延迟的时间，表示一定时间后才开始转变，单位同样为毫秒。此函数可以对整体指定延迟，也可以对个别指定延迟。
+   .transition()
+   .duration(1000)
+   .delay(funtion(d,i){
+   return 200*i;
+   })
+   */
+  var svg5 = body     //选择文档中的body元素
+    .append("svg")          //添加一个svg元素
+    .attr("width", width)       //设定宽度
+    .attr("height", height);
+  var circle1 = svg5.append("circle")
+    .attr("cx", 100)
+    .attr("cy", 100)
+    .attr("r", 45)
+    .style("fill","green");
+  var circle2= svg5.append("circle")
+    .attr("cx", 100)
+    .attr("cy", 200)
+    .attr("r", 45)
+    .style("fill","green");
+  var circle3= svg5.append("circle")
+    .attr("cx", 100)
+    .attr("cy", 300)
+    .attr("r", 45)
+    .style("fill","green");
+  //在1秒（1000毫秒）内将圆心坐标由100变为300
+  circle1.transition()
+    .duration(1000)
+    .attr("cx", 300);
+  //在1.5秒（1500毫秒）内将圆心坐标由100变为300，
+  //将颜色从绿色变为红色
+  circle2.transition()
+    .duration(1500)
+    .attr("cx", 300)
+    .style("fill","red");
+  //在2秒（2000毫秒）内将圆心坐标由100变为300
+  //将颜色从绿色变为红色
+  //将半径从45变成25
+  //过渡方式采用bounce（在终点处弹跳几次）
+  circle3.transition()
+    .duration(2000)
+    .ease("bounce")
+    .attr("cx", 300)
+    .style("fill","red")
+    .attr("r", 25);
+  /*NO.9理解 Update、Enter、Exit
+   Update、Enter、Exit 是 D3 中三个非常重要的概念，它处理的是当选择集和数据的数量关系不确定的情况。*/
+  /*svg.selectAll("rect")   //选择svg内所有的矩形
+   .data(dataset)      //绑定数组
+   .enter()            //指定选择集的enter部分
+   .append("rect")     //添加足够数量的矩形元素*/
+  /*如果数组为 [3, 6, 9, 12, 15]，将此数组绑定到三个 p 元素的选择集上。可以想象，会有两个数据没有元素与之对应，这时候 D3 会建立两个空的元素与数据对应，
+  这一部分就称为 Enter。
+  而有元素与数据对应的部分称为 Update。如果数组为 [3]，则会有两个元素没有数据绑定，那么没有数据绑定的部分被称为 Exit*/
+  /*var dataset = [ 3 , 6 , 9 , 12 , 15 ];
+
+   //选择body中的p元素
+   var p = d3.select("body").selectAll("p");
+
+   //获取update部分
+   var update = p.data(dataset);
+
+   //获取enter部分
+   var enter = update.enter();
+
+   //update部分的处理：更新属性值
+   update.text(function(d){
+   return "update " + d;
+   });
+
+   //enter部分的处理：添加元素后赋予属性值
+   enter.append("p")
+   .text(function(d){
+   return "enter " + d;
+   });*/
+
+  /*var dataset = [ 3 ];
+
+   //选择body中的p元素
+   var p = d3.select("body").selectAll("p");
+
+   //获取update部分
+   var update = p.data(dataset);
+
+   //获取exit部分
+   var exit = update.exit();
+
+   //update部分的处理：更新属性值
+   update.text(function(d){
+   return "update " + d;
+   });
+
+   //exit部分的处理：修改p元素的属性
+   exit.text(function(d){
+   return "exit";
+   });
+
+   //exit部分的处理通常是删除元素
+   // exit.remove();*/
+
+  /*NO.10交互式设计=================================================================================*/
+  /*var circle = svg.append("circle");
+
+   circle.on("click", function(){
+   //在这里添加交互内容
+   });*/
+  var svg6= body
+    .append("svg")
+    .attr("width", widthSr)
+    .attr("height", heightSr);
+
+  //添加矩形元素
+  var rectsa = svg6.selectAll(".MyRect")
+    .data(arrsr)
+    .enter()
+    .append("rect")
+    .attr("class","MyRecta")
+    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+    .attr("x", function(d,i){
+      return xScale(i) + rectPadding/2;
+    } )
+    .attr("y",function(d){
+      return yScale(d);
+    })
+    .attr("width", xScale.rangeBand() - rectPadding )
+    .attr("height", function(d){
+      return height - padding.top - padding.bottom - yScale(d);
+    })
+    .attr("fill","steelblue")		//填充颜色不要写在CSS里
+    .on("mouseover",function(d,i){
+      d3.select(this)
+        .attr("fill","yellow");
+    })
+    .on("mouseout",function(d,i){
+      d3.select(this)
+        .transition()
+        .duration(500)
+        .attr("fill","steelblue");
+    });
+  /*NO.11布局是什么===================================================*/
+  /*D3 总共提供了 12 个布局：饼状图（Pie）、力导向图（Force）、弦图（Chord）、树状图（Tree）、集群图（Cluster）、捆图（Bundle）、打包图（Pack）、直方图（Histogram）、分区图（Partition）、堆栈图（Stack）、矩阵树图（Treemap）、层级图（Hierarchy）。 12 个布局中，层级图（Hierarchy）不能直接使用。集群图、打包图、分区图、树状图、矩阵树图是由层级图扩展来的。如此一来，能够使用的布局是 11 个（有 5 个是由层级图扩展而来）。这些布局的作用都是将某种数据转换成另一种数据，而转换后的数据是利于可视化的*/
+
+  /*饼状图*/
+  var arrCorn = [ 30 , 10 , 43 , 55 , 13 ];//需要可视化的数据
+
+  var pie = d3.layout.pie();//定义一个布局
+
+  var piedata = pie(arrCorn);//后台转换数据 五个整数变成了五个对象每个对象都有起始角度和终止角度这些都是绘图需要的数据
+  var outerRadius = 150; //外半径
+
+  var innerRadius = 0; //内半径，为0则中间没有空白
+
+  var arc = d3.svg.arc()  //弧生成器
+    .innerRadius(innerRadius)   //设置内半径
+    .outerRadius(outerRadius);  //设置外半径
+
+  var color = d3.scale.category10();//有十种颜色的颜色比例尺
+
+  var svg7 = d3.select("body")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  var arcs = svg7.selectAll("g")
+    .data(piedata)
+    .enter()
+    .append("g")
+    .attr("transform","translate("+ (width/2) +","+ (width/2) +")");
+
+  arcs.append("path")
+    .attr("fill",function(d,i){
+      return color(i);
+    })
+    .attr("d",function(d){
+      return arc(d);
+    });
+
+  arcs.append("text")
+    .attr("transform",function(d){
+      return "translate(" + arc.centroid(d) + ")";
+    })
+    .attr("text-anchor","middle")
+    .text(function(d){
+      return d.data;
+    });
+
+  console.log(arrCorn);
+  console.log(piedata);
+
+  /*力导向图*/
+  /*初始数据结构*/
+  var nodes = [ { name: "桂林" }, { name: "广州" },
+    { name: "厦门" }, { name: "杭州" },
+    { name: "上海" }, { name: "青岛" },
+    { name: "天津" } ];
+
+  var edges = [ { source : 0 , target: 1 } , { source : 0 , target: 2 } ,
+    { source : 0 , target: 3 } , { source : 1 , target: 4 } ,
+    { source : 1 , target: 5 } , { source : 1 , target: 6 } ];
+
+  var force = d3.layout.force()
+    .nodes(nodes) //指定节点数组
+    .links(edges) //指定连线数组
+    .size([width,height]) //指定作用域范围
+    .linkDistance(150) //指定连线长度
+    .charge([-400]); //相互之间的作用力
+
+  force.start();    //开始作用
+  console.log(nodes);
+  console.log(edges);
+
+  var svg8= d3.select("body")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  //添加连线
+  var svg_edges = svg8.selectAll("line")
+    .data(edges)
+    .enter()
+    .append("line")
+    .style("stroke","#ccc")
+    .style("stroke-width",1);
+
+  var color = d3.scale.category20();
+
+  //添加节点
+  var svg_nodes = svg8.selectAll("circle")
+    .data(nodes)
+    .enter()
+    .append("circle")
+    .attr("r",20)
+    .style("fill",function(d,i){
+      return color(i);
+    })
+    .call(force.drag);  //使得节点能够拖动
+
+  //添加描述节点的文字
+  var svg_texts = svg8.selectAll("text")
+    .data(nodes)
+    .enter()
+    .append("text")
+    .style("fill", "black")
+    .attr("dx", 20)
+    .attr("dy", 8)
+    .text(function(d){
+      return d.name;
+    });
+
+  force.on("tick", function(){ //对于每一个时间间隔
+    //更新连线坐标
+    svg_edges.attr("x1",function(d){ return d.source.x; })
+      .attr("y1",function(d){ return d.source.y; })
+      .attr("x2",function(d){ return d.target.x; })
+      .attr("y2",function(d){ return d.target.y; });
+
+    //更新节点坐标
+    svg_nodes.attr("cx",function(d){ return d.x; })
+      .attr("cy",function(d){ return d.y; });
+
+    //更新文字坐标
+    svg_texts.attr("x", function(d){ return d.x; })
+      .attr("y", function(d){ return d.y; });
+  });
+
+  /*地图========================================================*/
+  /*在数据可视化中，地图是很重要的一部分。很多情况会与地图有关联，如中国各省的人口多少，GDP多少等，都可以和地图联系在一起。*/
+
+</script>
+</body>
+</html>
